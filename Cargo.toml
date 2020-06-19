@@ -7,7 +7,7 @@ license = "GNU GPLv3"
 repository = "https://github.com/davefol/rust-genomics"
 readme = "README.md"
 description = "A genomics library for rust focusing on individual genetics, population genetics, and SNPs"
-documentation = ""
+documentation = "https://github.com/davefol/rust-genomics"
 homepage = "https://github.com/davefol/rust-genomics"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
