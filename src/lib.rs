@@ -1,3 +1,5 @@
+mod genetics;
+
 #[cfg(test)]
 mod tests {
     #[test]
