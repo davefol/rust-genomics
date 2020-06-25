@@ -3,12 +3,12 @@ name = "genomics"
 version = "0.1.1"
 authors = ["Dave Fol <dof5@cornell.edu>"]
 edition = "2018"
-license = "GPL-3.0-only"
+license = "MIT OR Apache-2.0"
 repository = "https://github.com/davefol/rust-genomics"
 readme = "README.md"
 description = "A genomics library for rust focusing on individual genetics, population genetics, and SNPs"
-documentation = "https://github.com/davefol/rust-genomics"
-homepage = "https://github.com/davefol/rust-genomics"
+documentation = "https://docs.rs/genomics/"
+homepage = "https://davefol.com/projects/rust-genomics.html"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

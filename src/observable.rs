@@ -247,13 +247,21 @@ mod tests {
     #[test]
     fn test_csv_with_header_has_correct_loci() -> Result<(), Box<dyn Error>> {
         let mut sample = Sample::new();
-        sample.observe(
-            CsvBuilder::new()
-            .from_reader(
-                Box::new("test\n0/0".as_bytes())
-            )?
-        );
+        sample.observe(CsvBuilder::new().from_reader(Box::new("test\n0/0".as_bytes()))?);
         assert_eq!(sample.loci_names(), vec!["test"]);
+        Ok(())
+    }
+
+    #[test]
+    fn test_csv_has_correct_variations() -> Result<(), Box<dyn Error>> {
+        let mut sample = Sample::new();
+        sample.observe(
+            CsvBuilder::new().from_reader(Box::new("test\n0/1/2/3/4\n5/6/7/8/9".as_bytes()))?,
+        );
+        assert_eq!(
+            sample.variations("test").unwrap(),
+            (0..=9).map(|x| x.to_string()).collect::<Vec<String>>()
+        );
         Ok(())
     }
 }

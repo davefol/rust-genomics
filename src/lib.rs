@@ -266,6 +266,12 @@ impl Sample {
     pub fn loci_names(&self) -> Vec<&String> {
         self.loci.keys().collect()
     }
+
+    pub fn variations(&self, locus: &str) -> Option<Vec<String>> {
+        self.loci.get(locus).map(|loc| {
+            loc.variations.lock().unwrap().keys().map(|x| x.to_string()).collect()
+        })
+    }
 }
 
 impl From<&Sample> for Vec<AlleleCount> {
