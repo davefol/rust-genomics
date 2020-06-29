@@ -8,8 +8,8 @@ use std::sync::{Arc, Mutex};
 
 pub mod prelude;
 
-//mod fileio;
-mod observable;
+pub mod observable;
+pub mod index_of_association;
 
 pub type Groups = HashMap<String, Arc<Group>>;
 pub type Meta = HashMap<String, String>;
@@ -109,6 +109,7 @@ impl Individual {
 
 pub struct AlleleMatrix {
     data: ndarray::Array2<AlleleCount>,
+    loci: Vec<(usize, usize)>,
     dirty: bool,
 }
 
@@ -116,8 +117,35 @@ impl AlleleMatrix {
     pub fn new() -> Self {
         Self {
             data: ndarray::Array2::<AlleleCount>::zeros((0, 0)),
+            loci: vec![],
             dirty: false,
         }
+    }
+
+    pub fn from_vec(individuals: usize, loci: Vec<(usize, usize)>, data: Vec<AlleleCount>) -> Result<Self, Box<dyn Error>> {
+        let alleles = data.len() / individuals;
+        Ok(Self {
+            data: ndarray::Array::from_shape_vec((individuals, alleles).strides((alleles, 1)), data)?,
+            loci: loci,
+            dirty: false,
+        })
+    }
+
+    /// Computes the frequency matrix from allele counts
+    pub fn frequency(&self) -> Result<ndarray::Array2<f32>, Box<dyn Error>> {
+        let mut freqs = ndarray::Array2::from_elem(self.data.dim(), 0.0);
+        let loci: [(usize, usize); 2] = [(0,3), (3, 6)];
+    
+        ndarray::Zip::from(freqs.genrows_mut())
+        .and(self.data.genrows())
+        .apply(|mut freqs, row| {
+            let x = ndarray::Array::from(loci.iter().flat_map(|(start, end)| {
+                let loci_sum = row.slice(ndarray::s![*start..*end]).sum() as f32;
+                row.slice(ndarray::s![*start..*end]).map(|x| *x as f32 / loci_sum).to_vec()
+            }).collect::<Vec<_>>());
+            freqs.assign(&x);
+        });
+        Ok(freqs)
     }
 }
 
@@ -162,13 +190,11 @@ impl Sample {
     /// This function is called before a matrix calculation
     /// so there is no need to explicitly call it after observing data.
     pub fn flush(&mut self) -> Result<(), Box<dyn Error>> {
-        self.matrix = AlleleMatrix {
-            dirty: false,
-            data: ndarray::Array::from_shape_vec(
-                (self.individuals.len(), self.loci.n_alleles()).strides((self.loci.n_alleles(), 1)),
-                Vec::<AlleleCount>::from(&*self),
-            )?,
-        };
+
+        let loci: Vec<(usize, usize)> = self.loci.iter().enumerate().map(|(i, x)| {
+            (i, i + x.1.variations.lock().unwrap().len())
+        }).collect();
+        self.matrix = AlleleMatrix::from_vec(self.individuals.len(), loci, Vec::<AlleleCount>::from(&*self))?;
         Ok(())
     }
 
